@@ -65,3 +65,22 @@
   (lambda (n)
     (random_queens_aux n n (generate_table n) )
   ))
+
+(define getValueH 
+  (lambda (list)
+  (cond
+    ((empty? list) 0)
+    ((equal? (car list) '♕) (+ 1 (getValueH (cdr list) )))
+    (else
+     (getValueH (cdr list))))))
+
+(define getValueM
+  (lambda (m)
+    (map (lambda (x) (getValueH x)) m)
+    ))
+(define mapecito
+  (lambda (m)
+    (map (lambda (x) ( (map (lambda (y) equal? y '♕) x)) m))
+    ))
+;(mapecito '((♕ - - - - ) (♕ - - - - ) (♕ - - - - ) (♕ - - - - )))
+    
