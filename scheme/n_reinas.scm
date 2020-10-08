@@ -33,35 +33,91 @@
   (lambda (posR posC counter t to)
     (cond
       (( = counter posR) (append to (append (redifine_column posC 0 (car t) '()  )  (cdr t) )       )) 
-      (else (redifine_row posR posC (+ counter 1) (cons(cdr t) '()) (append to (cons(car t) '() ))     ))   
-      )
+      (else (redifine_row posR posC (+ counter 1) (cons(cdr t) '()) (append to (cons(car t) '() )))))
   ))
 ;;--------------------------------------------------------------------------------------------------------
-(define set-list 
+(define edit_row 
   (lambda (list x item)
   (cond
     ((empty? list) '())
     ((zero? x)     (cons item (cdr list)))
     (else
-     (cons (car list) (set-list (cdr list) (- x 1) item))))))
+     (cons (car list) (edit_row (cdr list) (- x 1) item))))
+    ))
 
-(define set-matrix 
-  (lambda (matrix x y item)
+(define edit_table
+  (lambda (table x y item)
   (cond
-    ((empty? matrix) '())
-    ((zero? x)      (cons (set-list (car matrix) y item) (cdr matrix)))
-    (else
-     (cons (car matrix) (set-matrix (cdr matrix) (- x 1) y item))))))
+    ((empty? table) '())
+    ((zero? x) (cons (edit_row (car table) y item) (cdr table)))
+    (else (cons (car table) (edit_table(cdr table) (- x 1) y item))))
+ ))
 
+;;--------------------------------------------------------------------------------------------------------
 
 (define random_queens_aux
   (lambda (n counter table)
     (cond
       ((zero? counter) table)
-      (else (random_queens_aux n (- counter 1) (set-matrix table (random n) (random n) '♕ ) ))
+      (else (random_queens_aux n (- counter 1) (edit_table table (random n) (random n) '♕ ) ))
       ) 
    ))
 (define random_queens
   (lambda (n)
     (random_queens_aux n n (generate_table n) )
   ))
+
+;;--------------------------------------------------------------------------------------------------------
+
+(define get_row
+  (lambda (table row counter)
+    (cond
+    ((= row counter) (car table))
+    (else (get_row (cdr table) row (+ counter 1) ) )
+    )
+    )
+  )
+
+
+(define evaluate_row_aux 
+  (lambda (table)
+  ;(display list)
+  (cond
+    
+    ((empty? table) 0)
+    
+    ((equal? (car table) '♕) (+ 1 (evaluate_row_aux (cdr table) )))
+    (else
+     (evaluate_row_aux (cdr table))))))
+
+
+(define evaluate_rows
+  (lambda (table)
+    (map (lambda (x) (evaluate_row_aux x)) table)
+    ))
+
+;;--------------------------------------------------------------------------------------------------------
+
+(define get_column
+  (lambda (table columns counter)
+    (cond
+      (( = counter (length table)) columns )
+       (else (get_column  )  )
+      )
+  ))
+
+(define evaluate_column
+  (lambda (table x y)
+    (cond
+      
+      )
+   ))
+
+;;--------------------------------------------------------------------------------------------------------
+
+(define evaluate
+  (lambda (table n )
+    (cond
+
+      )
+   ))
