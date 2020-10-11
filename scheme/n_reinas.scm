@@ -82,13 +82,12 @@
 (define evaluate_row_aux 
   (lambda (table)
   ;(display list)
-  (cond
-    
-    ((empty? table) 0)
-    
-    ((equal? (car table) '♕) (+ 1 (evaluate_row_aux (cdr table) )))
-    (else
-     (evaluate_row_aux (cdr table))))))
+    (cond
+      ((empty? table) 0)
+      ((equal? (car table) '♕) (+ 1 (evaluate_row_aux (cdr table) )))
+      (else (evaluate_row_aux (cdr table)))
+      )
+    ))
 
 
 (define evaluate_rows
@@ -98,19 +97,51 @@
 
 ;;--------------------------------------------------------------------------------------------------------
 
-(define get_column
-  (lambda (table columns counter)
+(define get_column_element_aux
+  (lambda (row counter position element)
     (cond
-      (( = counter (length table)) columns )
-       (else (get_column  )  )
+      ((= counter position) element)
+      ((pair? row ) (get_column_element_aux (cdr row) (+ counter 1) position (car row) ) )
+      (else (get_column_element_aux row (+ counter 1) position row ) )
       )
+   )
+  )
+
+
+(define get_column_aux
+  (lambda (table counter position columns)
+    ;(display table)
+    (cond
+      ((empty? table) columns)
+      (else (get_column_aux (cdr table) (+ counter 1) position (append columns (cons (get_column_element_aux (car table) -1 position 0 )   '() ) )  )  )    
+    )
   ))
 
-(define evaluate_column
-  (lambda (table x y)
+(define get_columns
+  (lambda (table counter output)
+    (display table)
+    (cond
+      ((= counter (length table)) (reverse output) )
+      (else (get_columns table (+ counter 1) (cons  (get_column_aux table -1 counter '() ) output  ) )   )
+      )
+    
+  ))
+
+(define evaluate_colum_aux
+  (lambda (table)
     (cond
       
+      ((empty? table) 0)
+      ((equal? (car table) '♕) (+ 1 (evaluate_colum_aux (cdr table) )))
+      (else (evaluate_colum_aux (cdr table)))
+      
       )
+      ))
+
+(define evaluate_column
+  (lambda (table)
+    (display table)
+    (map (lambda (x) (evaluate_colum_aux x)) table)
    ))
 
 ;;--------------------------------------------------------------------------------------------------------
