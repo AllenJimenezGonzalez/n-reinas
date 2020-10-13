@@ -152,12 +152,22 @@
 ;;--------------------------------------------------------------------------------------------------------
 ;; X y Y se deben iniciar en 0
 (define get_diagonal_aux
-  (lambda (table x y fun output)
+  (lambda (table x y fun1 fun2 output)
     ;(display table)
     (cond
       ((= x (length table)) (reverse output) ) 
       ;;Aca lo que hace es que se usa la funcion para traer la fila y luego se pasa la posicion de la columna que se pretende extraer
-      (else (get_diagonal_aux table (fun x 1) (fun y 1) fun (cons (get_column_element_aux (get_row table x 0) -1 y 0) output   )  ) )
+      (else (get_diagonal_aux table (fun1 x 1) (fun2 y 1) fun1 fun2 (cons (get_column_element_aux (get_row table x 0) -1 y 0) output   )  ) )
+      )
+    ))
+
+
+(define get_diagonal_aux_y
+  (lambda (table x y fun1 fun2 output)
+    ;(display table)
+    (cond
+      (( > 0 y ) (reverse output) )
+      (else (get_diagonal_aux_y table (fun1 x 1) (fun2 y 1) fun1 fun2 (cons (get_column_element_aux (get_row table x 0) -1 y 0) output   )  ) )
       )
     ))
 
@@ -170,7 +180,7 @@
   (lambda (table x y output)
     (cond
       ((= (length table) x) (reverse output))
-      (else ( get_bottom_left_diagonal table (+ x 1) y (cons ( get_diagonal_aux table x y + '() ) output )) )
+      (else ( get_bottom_left_diagonal table (+ x 1) y (cons ( get_diagonal_aux table x y + + '() ) output )) )
       )
     )
   )
@@ -181,7 +191,7 @@
   (lambda (table x y output)
     (cond
       ((= (length table) y) output)
-      (else ( get_upper_left_diagonal table x (+ y 1) (cons ( get_diagonal_aux table x y + '() ) output )) )
+      (else ( get_upper_left_diagonal table x (+ y 1) (cons ( get_diagonal_aux table x y + + '() ) output )) )
       )
     )
   )
@@ -195,12 +205,33 @@
 ;;Bloque de funciones del barrido de la matriz de derecha a izquierda
 ;;--------------------------------------------------------------------------------------------------------
 
+
+;;Hay que enviar y-1 como parametro en y o en su defecto -> (length table ) -1
+
 (define get_bottom_rigth_diagonal
   (lambda (table x y output)
+    ;(display table)
     (cond
-      
+      ((= x (length table)) (reverse output) )
+      (else (get_bottom_rigth_diagonal table (+ x 1) y (cons ( get_diagonal_aux table x y + - '() ) output ) ))
       )
       ))
+;; El parametro Y se le debe restar 2 -> (Length table)-2
+;; Se le debe restar 2 debido a que la diagonal identidad ya esta contemplada en la parte inferior del barrido de derecha a izquierda
+(define get_upper_rigth_diagonal
+  (lambda (table x y output)
+    ;(display table)
+    (cond
+      ((< y 0) output)
+      (else (get_upper_rigth_diagonal table x (- y 1) (cons (get_diagonal_aux_y table x y + - '() ) output )  ) )
+      )
+    ))
+
+;; Funcuion que agrupa todas las diagonales de la tabla barrida de izquierda a derecha
+(define get_right_diagonal
+  (lambda (table)
+    (append (get_upper_rigth_diagonal table 0 (- (length table) 2 ) '() ) (get_bottom_rigth_diagonal table 0 (- (length table) 1 ) '() ) )
+    ))
 
 ;;--------------------------------------------------------------------------------------------------------
 
