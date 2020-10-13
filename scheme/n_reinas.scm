@@ -69,12 +69,14 @@
 
 ;;--------------------------------------------------------------------------------------------------------
 
+;; El contador se debe iniciar en 0
 (define get_row
   (lambda (table row counter)
     (cond
-    ((= row counter) (car table))
-    (else (get_row (cdr table) row (+ counter 1) ) )
-    )
+      
+      ((= row counter) (car table))
+      (else (get_row (cdr table) row (+ counter 1) ) )
+      )
     )
   )
 
@@ -97,6 +99,7 @@
 
 ;;--------------------------------------------------------------------------------------------------------
 
+;;El contador se debe iniciar el -1
 (define get_column_element_aux
   (lambda (row counter position element)
     (cond
@@ -143,6 +146,61 @@
     (display table)
     (map (lambda (x) (evaluate_colum_aux x)) table)
    ))
+
+;;--------------------------------------------------------------------------------------------------------
+;;Funcion variable para obtener el barrido de la tabla ya sea desde la derecha o desde la izquierda
+;;--------------------------------------------------------------------------------------------------------
+;; X y Y se deben iniciar en 0
+(define get_diagonal_aux
+  (lambda (table x y fun output)
+    ;(display table)
+    (cond
+      ((= x (length table)) (reverse output) ) 
+      ;;Aca lo que hace es que se usa la funcion para traer la fila y luego se pasa la posicion de la columna que se pretende extraer
+      (else (get_diagonal_aux table (fun x 1) (fun y 1) fun (cons (get_column_element_aux (get_row table x 0) -1 y 0) output   )  ) )
+      )
+    ))
+
+;;--------------------------------------------------------------------------------------------------------
+;;Bloque de funciones del barrido de la matriz de izquierda a derecha
+;;--------------------------------------------------------------------------------------------------------
+;;Barre de izquiera a derecha la tabla en la parte inferior
+
+(define get_bottom_left_diagonal
+  (lambda (table x y output)
+    (cond
+      ((= (length table) x) (reverse output))
+      (else ( get_bottom_left_diagonal table (+ x 1) y (cons ( get_diagonal_aux table x y + '() ) output )) )
+      )
+    )
+  )
+
+;;Barre de izquierda a derecha la tabla en la parte superior
+;;En el parametro Y se debe enviar con un numero 1
+(define get_upper_left_diagonal
+  (lambda (table x y output)
+    (cond
+      ((= (length table) y) output)
+      (else ( get_upper_left_diagonal table x (+ y 1) (cons ( get_diagonal_aux table x y + '() ) output )) )
+      )
+    )
+  )
+;;Entrega todas las diagonales de izquierda a derecha en una tupla
+
+(define get_left_diagonal
+  (lambda (table)
+    (append (get_upper_left_diagonal table 0 1 '()) (get_bottom_left_diagonal table 0 0 '() )  )
+   ))
+;;--------------------------------------------------------------------------------------------------------
+;;Bloque de funciones del barrido de la matriz de derecha a izquierda
+;;--------------------------------------------------------------------------------------------------------
+
+(define get_bottom_rigth_diagonal
+  (lambda (table x y output)
+    (cond
+      
+      )
+      ))
 
 ;;--------------------------------------------------------------------------------------------------------
 
