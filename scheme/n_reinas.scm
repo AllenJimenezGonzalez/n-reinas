@@ -1,3 +1,9 @@
+;;--------------------------------------------------------------------------------------------------------
+;;--------------------------------------------------------------------------------------------------------
+;;Inicio del seccion del generador de cromosomas y poblacion aleatorios
+;;--------------------------------------------------------------------------------------------------------
+;;--------------------------------------------------------------------------------------------------------
+
 (define generate_row
   (lambda (n row)
     (cond
@@ -6,7 +12,7 @@
       )
     ))
 
-
+;;--------------------------------------------------------------------------------------------------------
 (define generate_column
   (lambda (n m table)
     (cond
@@ -14,43 +20,30 @@
       (else (generate_column (- n 1) m (cons (generate_row m '() ) table ) ) )  
       )
     ))
-
+;;--------------------------------------------------------------------------------------------------------
 (define generate_table
   (lambda (n)
     (generate_column n n '() )
     ))
     
 ;;--------------------------------------------------------------------------------------------------------
-(define redifine_column
-  (lambda (pos counter t to)
-    (cond
-      ((= pos counter) (append to (append '(-) (cdr t))  ))  
-      (else (redifine_column pos (+ counter 1) (cdr t) (append to (cons (car t) '() ) ) ) ) 
-      )
-    ))
-(define redifine_row
-  (lambda (posR posC counter t to)
-    (cond
-      (( = counter posR) (append to (append (redifine_column posC 0 (car t) '()  )  (cdr t) )       )) 
-      (else (redifine_row posR posC (+ counter 1) (cons(cdr t) '()) (append to (cons(car t) '() )))))
-  ))
-;;--------------------------------------------------------------------------------------------------------
 (define edit_row 
   (lambda (list x item)
   (cond
     ((empty? list) '())
     ((zero? x)     (cons item (cdr list)))
-    (else
-     (cons (car list) (edit_row (cdr list) (- x 1) item))))
-    ))
-
+    (else (cons (car list) (edit_row (cdr list) (- x 1) item)) )
+   )
+ ))
+;;--------------------------------------------------------------------------------------------------------
 (define edit_table
   (lambda (table x y item)
   (cond
     ((empty? table) '())
     ((zero? x) (cons (edit_row (car table) y item) (cdr table)))
-    (else (cons (car table) (edit_table(cdr table) (- x 1) y item))))
- ))
+    (else (cons (car table) (edit_table(cdr table) (- x 1) y item)))
+    )
+  ))
 
 ;;--------------------------------------------------------------------------------------------------------
 
@@ -61,11 +54,25 @@
       (else (random_queens_aux n (- counter 1) (edit_table table (random n) (random n) '♕ ) ))
       ) 
    ))
+;;--------------------------------------------------------------------------------------------------------
 (define random_queens
   (lambda (n)
     (random_queens_aux n n (generate_table n) )
   ))
+;;--------------------------------------------------------------------------------------------------------
 
+(define get_population
+  (lambda (size psize output)
+    (cond
+      ((zero? size ) output)
+      (else (get_population (- size 1) psize (cons (random_queens psize) output  ) ) )
+      )
+      ))
+
+;;--------------------------------------------------------------------------------------------------------
+;;--------------------------------------------------------------------------------------------------------
+;;Inicio del segmento de evaluacion de cromosomas
+;;--------------------------------------------------------------------------------------------------------
 ;;--------------------------------------------------------------------------------------------------------
 
 ;; El contador se debe iniciar en 0
@@ -93,7 +100,6 @@
 
 (define get_column_aux
   (lambda (table counter position columns)
-    ;(display table)
     (cond
       ((empty? table) columns)
       (else (get_column_aux (cdr table) (+ counter 1) position (append columns (cons (get_column_element_aux (car table) -1 position 0 )   '() ) )  )  )    
@@ -102,7 +108,6 @@
 
 (define get_columns
   (lambda (table counter output)
-    ;(display table)
     (cond
       ((= counter (length table)) (reverse output) )
       (else (get_columns table (+ counter 1) (cons  (get_column_aux table -1 counter '() ) output  ) )   )
@@ -181,6 +186,7 @@
       (else (get_bottom_rigth_diagonal table (+ x 1) y (cons ( get_diagonal_aux table x y + - '() ) output ) ))
       )
       ))
+;;--------------------------------------------------------------------------------------------------------
 ;; El parametro Y se le debe restar 2 -> (Length table)-2
 ;; Se le debe restar 2 debido a que la diagonal identidad ya esta contemplada en la parte inferior del barrido de derecha a izquierda
 (define get_upper_rigth_diagonal
@@ -190,15 +196,12 @@
       (else (get_upper_rigth_diagonal table x (- y 1) (cons (get_diagonal_aux_y table x y + - '() ) output )  ) )
       )
     ))
+;;--------------------------------------------------------------------------------------------------------
 ;; Funcuion que agrupa todas las diagonales de la tabla barrida de izquierda a derecha
 (define get_right_diagonal
   (lambda (table)
     (append (get_upper_rigth_diagonal table 0 (- (length table) 2 ) '() ) (get_bottom_rigth_diagonal table 0 (- (length table) 1 ) '() ) )
     ))
-
-
-
-
 ;;--------------------------------------------------------------------------------------------------------
 
 (define evaluate_get_score
@@ -210,17 +213,15 @@
     
       )
     ))
-
-
+;;--------------------------------------------------------------------------------------------------------
 (define evaluate_data
   (lambda (results)
     (map (lambda (x) (evaluate_get_score x)) results)
     ))
-
-
+;;--------------------------------------------------------------------------------------------------------
 (define evaluate
   (lambda (table)
-    (display table )
+    ;(display table )
     (append
     ;;Evalua las filas
     (evaluate_data table )
@@ -231,5 +232,26 @@
     ;;Evalua la diagonal con barrido de derecha a izquierda
     (evaluate_data (get_right_diagonal table))
     )
-    
    ))
+;;--------------------------------------------------------------------------------------------------------
+;;--------------------------------------------------------------------------------------------------------
+;;Inicio del segmento de cruce
+;;--------------------------------------------------------------------------------------------------------
+;;--------------------------------------------------------------------------------------------------------
+(define evaluate_new_gen
+  (lambda (child)
+    (apply + (evaluate_data child))
+  ))
+
+
+
+(define cross_gens
+  (lambda (gen1 gen2 backup)
+    (display gen1)
+    (display gen2)
+    (cond
+     
+      ((equal? (get_row gen1 (- (round (/ (length gen1) 2)) 1) 0) (get_row gen2 (- (round (/ (length gen2) 2)) 1 ) 0 ) ) #t)
+      (else #f)
+      )
+    ))
