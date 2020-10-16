@@ -61,7 +61,7 @@
   ))
 ;;--------------------------------------------------------------------------------------------------------
 
-(define get_population
+(define get_population  
   (lambda (size psize output)
     (cond
       ((zero? size ) output)
@@ -242,16 +242,48 @@
   (lambda (child)
     (apply + (evaluate_data child))
   ))
+;;--------------------------------------------------------------------------------------------------------
 
+(define take_left
+  (lambda (table output counter)
+    (display table)
+    (cond
+      ((empty? table) output)   
+      ( (= counter (round( / (length table) 2)) ) (reverse output) )
+      ((equal?(pair? (cdr table)) #f ) (reverse output)  )
+      (else (take_left (cdr table) (cons (car table) output  ) (+ counter 1) ))
+    )
+   ))
+
+(define take_rigth
+  (lambda (table counter)
+    (display table)
+    (cond
+      ((empty? table) '())   
+      ( (= counter (round (/ (length table) 2)) ) (cons (car table) (cdr table)) )
+      (else (take_rigth (cdr table) (+ counter 1) ))
+    )
+   ))
 
 
 (define cross_gens
-  (lambda (gen1 gen2 backup)
+  (lambda (gen1 gen2)
     (display gen1)
     (display gen2)
     (cond
-     
-      ((equal? (get_row gen1 (- (round (/ (length gen1) 2)) 1) 0) (get_row gen2 (- (round (/ (length gen2) 2)) 1 ) 0 ) ) #t)
-      (else #f)
+      ((equal? (get_row gen1 (- (round (/ (length gen1) 2)) 1) 0) (get_row gen2 (- (round (/ (length gen2) 2)) 1 ) 0 ) ) (append (take_left gen1 '() 0 ) (take_rigth gen2 0)   )  )
+      (else '())
       )
     ))
+
+;;Se obtiene una nueva generacion realizando mezclas aleatorias
+
+(define new_generation
+  (lambda (population counter output)
+    (cond
+      ((= counter (round( / (length population)4))) output )
+      (else (new_generation population (+ counter 1) (append (cross_gens (get_row population (random (length population))0) (get_row population (random (length population))0) ) output)))
+    )
+   ))
+
+;;--------------------------------------------------------------------------------------------------------
