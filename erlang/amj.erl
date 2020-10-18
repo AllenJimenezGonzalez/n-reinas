@@ -46,6 +46,6 @@ fullQueens(N1, Row) -> [[{N1, N2}| T] ||T <- fullQueens(N1-1, Row), N2 <- makeL(
 getList(N, L) when length(L) =< N -> L ;
 getList(N, L)-> {L1, _L2} = lists:split(N, L), L1.
 
-%%Domain: Two integers, the firts one number of queens and the size of the table(NxN) and the second one the number of solutions that the user wants.%%
+%%Domain: Two integers, the firts number have to be bigger than 3 and is the number of queens and the size of the table(NxN) and the second one is the number of solutions that the user wants.%%
 %%Codomain: A list of results of the n queens problem with the number of solutions that the user wanted.%%
 backtrackingNReinas(N, Cant) ->  getList(Cant ,fullQueens(N, N)).
