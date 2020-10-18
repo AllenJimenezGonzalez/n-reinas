@@ -52,7 +52,7 @@
     (cond
       ((zero? counter) table)
       (else (random_queens_aux n (- counter 1) (edit_table table (random n) (random n) '♕ ) ))
-      ) 
+    ) 
    ))
 ;;--------------------------------------------------------------------------------------------------------
 (define random_queens
@@ -263,13 +263,14 @@
       ( (= counter (round (/ (length table) 2)) ) (cons (car table) (cdr table)) )
       (else (take_rigth (cdr table) (+ counter 1) ))
     )
-   ))
+ ))
 
 
 (define cross_gens
   (lambda (gen1 gen2)
-    (display gen1)
-    (display gen2)
+    ;(display gen1)
+    ;(display "\n")
+    ;(display gen2)
     (cond
       ((equal? (get_row gen1 (- (round (/ (length gen1) 2)) 1) 0) (get_row gen2 (- (round (/ (length gen2) 2)) 1 ) 0 ) ) (append (take_left gen1 '() 0 ) (take_rigth gen2 0)   )  )
       (else '())
@@ -278,12 +279,66 @@
 
 ;;Se obtiene una nueva generacion realizando mezclas aleatorias
 
-(define new_generation
+(define new_generation_aux
   (lambda (population counter output)
+    (display population)
     (cond
-      ((= counter (round( / (length population)4))) output )
-      (else (new_generation population (+ counter 1) (append (cross_gens (get_row population (random (length population))0) (get_row population (random (length population))0) ) output)))
+      ((= counter (round( / (length population)2))) output )
+      (else (new_generation_aux population (+ counter 1) (cons (cross_gens (get_row population (random (length population)) 0) (get_row population (random (length population))0) ) output)))
     )
    ))
 
+(define new_generation
+  (lambda (population)
+    (new_generation_aux population 0 '())
+      ))
+
 ;;--------------------------------------------------------------------------------------------------------
+;;Seccion de mutacion de la nueva generacion de individuos
+;;--------------------------------------------------------------------------------------------------------
+
+(define get_table
+  (lambda (population pos)
+    (display population)
+    (cond
+      ((empty? population) '() )
+      ((= pos 0) (car population)) 
+      (else (get_table (cdr population) (- pos 1) ))
+    )
+   ))
+;;--------------------------------------------------------------------------------------------------------
+(define get_group_aux
+  (lambda (population orientation counter pos output)
+    (cond
+      ((equal? orientation 'r ) (cond
+                                  ((= counter pos) (cdr population) ) 
+                                  (else(get_group_aux (cdr population) orientation (+ counter 1) pos '() ))
+                                  ))
+      (else (cond
+              ((= counter pos) (cons output '()) )
+              (else (get_group_aux (cdr population) orientation (+ counter 1) pos (append output (car population)) ))
+              ))
+   )
+ ))
+;;--------------------------------------------------------------------------------------------------------
+(define get_group
+  (lambda (population orientation pos)
+    (get_group_aux population orientation 0 pos '())
+ ))
+;;--------------------------------------------------------------------------------------------------------
+(define mutate_gen_aux
+  (lambda (population rand )
+    (display rand)
+    (append (get_group population 'l rand )  (cons (random_queens_aux (length population) (length population) (get_table population rand ) ) '() ) (get_group population 'r rand ))
+   ))
+;;--------------------------------------------------------------------------------------------------------
+(define mutate_gen
+  (lambda (population counter )
+    (display population)
+    (display "\n")
+
+    (cond
+      (( = counter ( + (round( * (length population) 0.05)) 1)) population)  
+      (else (mutate_gen (mutate_gen_aux population (random (length population))) (+ counter 1) )) 
+    )
+   ))
