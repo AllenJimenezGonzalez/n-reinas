@@ -63,7 +63,6 @@
 
 (define get_population  
   (lambda (size psize output)
-    ;(display output)
     (cond
       ((zero? size ) output)
       (else (get_population (- size 1) psize (cons (random_queens psize) output  ) ) )
@@ -167,8 +166,7 @@
   (lambda (table x y output)
     (cond
       ((= (length table) y) output)
-      ((equal? (pair? table) #f ) output  )
-      (else ( get_upper_left_diagonal table x (+ y 1) (cons ( get_diagonal_aux table x y + + '() ) output )) ) 
+      (else ( get_upper_left_diagonal table x (+ y 1) (cons ( get_diagonal_aux table x y + + '() ) output )) )
       )
     )
   )
@@ -248,7 +246,7 @@
 
 (define take_left
   (lambda (table output counter)
-    ;(display table)
+    (display table)
     (cond
       ((empty? table) output)   
       ( (= counter (round( / (length table) 2)) ) (reverse output) )
@@ -259,7 +257,7 @@
 
 (define take_rigth
   (lambda (table counter)
-    ;(display table)
+    (display table)
     (cond
       ((empty? table) '())   
       ( (= counter (round (/ (length table) 2)) ) (cons (car table) (cdr table)) )
@@ -270,12 +268,9 @@
 
 (define cross_gens
   (lambda (gen1 gen2)
-    (display "Gen 1")
-    (display gen1)
-    (display "\n")
-    (display "Gen 2")
-    (display gen2)
-    (display "\n")
+    ;(display gen1)
+    ;(display "\n")
+    ;(display gen2)
     (cond
       ((equal? (get_row gen1 (- (round (/ (length gen1) 2)) 1) 0) (get_row gen2 (- (round (/ (length gen2) 2)) 1 ) 0 ) ) (append (take_left gen1 '() 0 ) (take_rigth gen2 0)   )  )
       (else '())
@@ -283,9 +278,10 @@
     ))
 
 ;;Se obtiene una nueva generacion realizando mezclas aleatorias
+
 (define new_generation_aux
   (lambda (population counter output)
-    ;(display population)
+    (display population)
     (cond
       ((= counter (round( / (length population)2))) output )
       (else (new_generation_aux population (+ counter 1) (cons (cross_gens (get_row population (random (length population)) 0) (get_row population (random (length population))0) ) output)))
@@ -303,7 +299,7 @@
 
 (define get_table
   (lambda (population pos)
-    ;(display population)
+    (display population)
     (cond
       ((empty? population) '() )
       ((= pos 0) (car population)) 
@@ -319,7 +315,7 @@
                                   (else(get_group_aux (cdr population) orientation (+ counter 1) pos '() ))
                                   ))
       (else (cond
-              ((= counter pos) (cons output '()) ) 
+              ((= counter pos) (cons output '()) )
               (else (get_group_aux (cdr population) orientation (+ counter 1) pos (append output (car population)) ))
               ))
    )
@@ -332,66 +328,17 @@
 ;;--------------------------------------------------------------------------------------------------------
 (define mutate_gen_aux
   (lambda (population rand )
-    ;(display rand)
-    (append (get_group population 'l rand ) (cons (random_queens_aux (length population) (length population) (get_table population rand ) ) '() ) (get_group population 'r rand ))
+    (display rand)
+    (append (get_group population 'l rand )  (cons (random_queens_aux (length population) (length population) (get_table population rand ) ) '() ) (get_group population 'r rand ))
    ))
 ;;--------------------------------------------------------------------------------------------------------
 (define mutate_gen
-  (lambda (population counter  )
-    ;(display "\n")
-    ;(display population)
-    ;(display "\n")
+  (lambda (population counter )
+    (display population)
+    (display "\n")
 
     (cond
-      ((empty? population) '())
-      ((pair? (car population))(cond
-                              (( = counter ( + (round( * (length population) 0.05)) 1)) population)  
-                              (else (mutate_gen (mutate_gen_aux population (random (length population))) (+ counter 1) ))  
-                              ))
-      (else (mutate_gen (cdr population) counter  ) )
-      
+      (( = counter ( + (round( * (length population) 0.05)) 1)) population)  
+      (else (mutate_gen (mutate_gen_aux population (random (length population))) (+ counter 1) )) 
     )
    ))
-;;--------------------------------------------------------------------------------------------------------
-
-
-(define evaluate_results
-  (lambda (results)
-    ;(display results)
-    ;(display "\n")
-    (cond
-      ((equal? (pair? results) #f ))
-      ((empty? results) #t)
-      ((> (car results) 1) #f)
-      (else(evaluate_results (cdr results)))
-    )
-   ))
-
-(define evaluate_population
-  (lambda (population champion)
-    ;(display population)
-    ;(display "\n")
-    ;(display champion)
-    (cond
-      ((empty? population) champion )
-      ((equal? (evaluate_results (evaluate (car population)) ) #t ) ( evaluate_population (cdr population) (car population)  ) )
-      (else (evaluate_population (cdr population) champion  ))
-    )
- )) 
-
-(define get_final_population 
-  (lambda (table)
-    (append (mutate_gen ( new_generation table ) 0) table )
-  ))
-
-(define geneticNQueens_aux
-  (lambda (n)
-    (get_final_population (get_population n n '()) )
- ))
-
-(define geneticNQueens
-  (lambda (n)
-    (evaluate_population (geneticNQueens_aux n) '()  ) 
-  ))
-
-;;--------------------------------------------------------------------------------------------------------
