@@ -63,7 +63,6 @@
 
 (define get_population  
   (lambda (size psize output)
-    ;(display output)
     (cond
       ((zero? size ) output)
       (else (get_population (- size 1) psize (cons (random_queens psize) output  ) ) )
@@ -245,51 +244,45 @@
     (apply + (evaluate_data child))
   ))
 ;;--------------------------------------------------------------------------------------------------------
-
-(define take_left
-  (lambda (table output counter)
-    ;(display table)
-    (cond
-      ((empty? table) output)   
-      ( (= counter (round( / (length table) 2)) ) (reverse output) )
-      ((equal?(pair? (cdr table)) #f ) (reverse output)  )
-      (else (take_left (cdr table) (cons (car table) output  ) (+ counter 1) ))
-    )
-   ))
-
-(define take_rigth
-  (lambda (table counter)
-    ;(display table)
-    (cond
-      ((empty? table) '())   
-      ( (= counter (round (/ (length table) 2)) ) (cons (car table) (cdr table)) )
-      (else (take_rigth (cdr table) (+ counter 1) ))
-    )
- ))
-
-
 (define cross_gens
   (lambda (gen1 gen2)
-    (display "Gen 1")
-    (display gen1)
-    (display "\n")
-    (display "Gen 2")
-    (display gen2)
-    (display "\n")
+    ;(display "Gen 1")
+    ;(display gen1)
+    ;(display "\n")
+    ;(display "Gen 2")
+    ;(display gen2)
+    ;(display "\n")
+    ;(display ( - (round (/ (length gen1) 2 )) 1))
     (cond
-      ((equal? (get_row gen1 (- (round (/ (length gen1) 2)) 1) 0) (get_row gen2 (- (round (/ (length gen2) 2)) 1 ) 0 ) ) (append (take_left gen1 '() 0 ) (take_rigth gen2 0)   )  )
+      ((equal? (get_row gen1 (- (round (/ (length gen1) 2)) 1) 0)
+               (get_row gen2 (- (round (/ (length gen2) 2)) 1 ) 0 ) )
+               (append (get_group gen1 'l (round ( / (length gen1) 2)) ) (get_group gen2 'r (round ( / (length gen2) 2))    )  ))
+      
       (else '())
       )
     ))
+
+(define clean_results
+  (lambda (input output)
+    (cond
+      ((empty? input) output)
+      (else(cond
+             ((pair? (car input)) (clean_results (cdr input) (append (cons (car input) '() ) output ) )  )
+             (else (clean_results (cdr input) output ) )
+             ))
+      )
+  ))
 
 ;;Se obtiene una nueva generacion realizando mezclas aleatorias
 (define new_generation_aux
   (lambda (population counter output)
     ;(display population)
     (cond
-      ((= counter (round( / (length population)2))) output )
+     ; ((= counter (round( / (length population)2))) output )
+      ((= counter 400) (clean_results output '() ) )
+      ;(else (new_generation_aux population (+ counter 1) (cons (cross_gens (get_row population (random (length population)) 0) (get_row population (random (length population))0) ) output)))
       (else (new_generation_aux population (+ counter 1) (cons (cross_gens (get_row population (random (length population)) 0) (get_row population (random (length population))0) ) output)))
-    )
+      )
    ))
 
 (define new_generation
@@ -315,18 +308,27 @@
   (lambda (population orientation counter pos output)
     (cond
       ((equal? orientation 'r ) (cond
-                                  ((= counter pos) (cdr population) ) 
+                                  ((= counter pos) (append (cons (car population) '() ) (cdr population) ) ) 
                                   (else(get_group_aux (cdr population) orientation (+ counter 1) pos '() ))
                                   ))
       (else (cond
-              ((= counter pos) (cons output '()) ) 
-              (else (get_group_aux (cdr population) orientation (+ counter 1) pos (append output (car population)) ))
+              ((= counter pos) (reverse output) ) 
+              (else (get_group_aux (cdr population) orientation (+ counter 1) pos (cons (car population) output ) ))
               ))
    )
  ))
 ;;--------------------------------------------------------------------------------------------------------
 (define get_group
   (lambda (population orientation pos)
+    ;(display "\n")
+    ;(display "get_group")
+    ;(display "\n")
+    ;(display population)
+    ;(display "\n")
+    ;(display orientation)
+    ;(display "\n")
+    ;(display pos)
+    ;(display "\n")
     (get_group_aux population orientation 0 pos '())
  ))
 ;;--------------------------------------------------------------------------------------------------------
@@ -341,7 +343,6 @@
     ;(display "\n")
     ;(display population)
     ;(display "\n")
-
     (cond
       ((empty? population) '())
       ((pair? (car population))(cond
@@ -354,18 +355,29 @@
    ))
 ;;--------------------------------------------------------------------------------------------------------
 
-
 (define evaluate_results
   (lambda (results)
     ;(display results)
     ;(display "\n")
     (cond
-      ((equal? (pair? results) #f ))
+      ;((equal? (pair? results) #f ))
       ((empty? results) #t)
       ((> (car results) 1) #f)
       (else(evaluate_results (cdr results)))
     )
    ))
+
+(define get_final_population 
+  (lambda (table)
+    ;(display table)
+    (append (mutate_gen ( new_generation table ) 0) table )
+  ))
+
+(define geneticNQueens_aux
+  (lambda (n)
+    (get_final_population (get_population n n '()) ) 
+   
+ ))
 
 (define evaluate_population
   (lambda (population champion)
@@ -377,21 +389,34 @@
       ((equal? (evaluate_results (evaluate (car population)) ) #t ) ( evaluate_population (cdr population) (car population)  ) )
       (else (evaluate_population (cdr population) champion  ))
     )
- )) 
-
-(define get_final_population 
-  (lambda (table)
-    (append (mutate_gen ( new_generation table ) 0) table )
-  ))
-
-(define geneticNQueens_aux
-  (lambda (n)
-    (get_final_population (get_population n n '()) )
  ))
+
+(define queens_quantity_filter
+  (lambda (list quantity)
+    (cond
+      ((= (apply + list) quantity)#t)
+      (else #f)
+    )
+   ))
+
+(define geneticNQueens_final
+  (lambda (championchild)
+    (display "\n")
+    (display championchild )
+    (display "\n")
+    (cond
+      ((equal? championchild '() ) #f)
+      ((equal? (queens_quantity_filter (evaluate_data championchild ) (length championchild)  ) #t ) #t )
+      (else #f) 
+    )
+  ))
 
 (define geneticNQueens
   (lambda (n)
-    (evaluate_population (geneticNQueens_aux n) '()  ) 
+    (cond
+      ((equal? (geneticNQueens_final(evaluate_population (geneticNQueens_aux n) '()  ) ) #t) #t )
+      (else (geneticNQueens n))
+    )
   ))
 
 ;;--------------------------------------------------------------------------------------------------------
