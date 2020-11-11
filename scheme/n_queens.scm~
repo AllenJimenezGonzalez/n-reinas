@@ -1,17 +1,8 @@
-(define random_custom
-  (lambda (rand size entity)
-    (cond
-      ((member rand entity) (random_custom (random size) size entity) )
-      (else rand) 
-    )
-  )
-)
-
 (define generate_entity_aux
   (lambda (size counter output)
     (cond
       ((= size counter) output )
-      (else (generate_entity_aux size (+ counter 1) (append output (cons (random_custom (random size) size output) '() )) ) )
+      (else (generate_entity_aux size (+ counter 1) (append output (cons (random size) '() )) ) )
       )
    ))
 
@@ -23,7 +14,7 @@
 (define generate_population_aux
   (lambda (size counter output)
     (cond
-      ((= 50 counter) output )
+      ((= size counter) output )
       (else (generate_population_aux size (+ counter 1) (cons (generate_entity size) output  ) ))
       )
  ))
@@ -33,23 +24,21 @@
     (generate_population_aux size 0 '())
       ))
 
-(define get_value 
-  (lambda (elem1 elem2)
-    (abs(- elem1 elem2))
-  )
-)
+(define  get_aptitute_rc
+  (lambda (entity counter)
+      (cond
+        ((empty? entity) counter )
+        ((member (car entity) entity ) #f )
+        (else (get_aptitute_rc (cdr entity) counter ))
+      )
+      ))
 
 (define get_aptitude
-  (lambda (entity counter)
+  (lambda (entity)
     (cond
-      ((empty? (cdr entity)) counter )  
-      (else (cond
-              ((< (get_value (car entity) (cadr entity)) 2 ) ( get_aptitude (cdr entity) (+ counter 1) ) )
-              (else ( get_aptitude (cdr entity) counter ) )
-              ))
+      
       )
 ))
- 
 (define evaluate_population
   (lambda (population output)
     ()
