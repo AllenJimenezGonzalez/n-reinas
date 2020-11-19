@@ -42,7 +42,8 @@
 (define get_aptitude
   (lambda (entity counter)
     (cond
-      ((empty? (cdr entity)) counter )  
+      ((empty? entity ) 1000000)
+      ((empty? (cdr entity)) counter )   
       (else (cond
               ((< (get_value (car entity) (cadr entity)) 2 ) ( get_aptitude (cdr entity) (+ counter 1) ) )
               (else ( get_aptitude (cdr entity) counter ) )
@@ -50,12 +51,16 @@
       )
 ))
  
-(define evaluate_population
-  (lambda (population output)
-    ()
-      ))
+(define get_elite
+  (lambda (population elite)
+    (cond
+      ((empty? population) elite)
+      (( < (get_aptitude (car population) 0 ) (get_aptitude elite 0)) (get_elite (cdr population) (car population) ) )
+      (else (get_elite (cdr population) elite ))
+    )
+   ))
 
 (define cross_population
   (lambda (population output)
     ()
-      ))
+ ))
